@@ -1539,6 +1539,10 @@ typedef struct video_par
   int AbrDet_Flag[300];
   int GraDet_Flag[300];
   float IPR[300];
+  int IPR1[300];
+  int SKP1[300];
+  int IPR2[300];
+  int SKP2[300];
 
   unsigned int PicWidthInMbs;
   unsigned int PicHeightInMapUnits;
