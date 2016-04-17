@@ -1536,6 +1536,9 @@ typedef struct video_par
   int bit_picture[3][1];
   int bit_final[300][3][1];
   int number_frame;
+  int AbrDet_Flag[300];
+  int GraDet_Flag[300];
+  float IPR[300];
 
   unsigned int PicWidthInMbs;
   unsigned int PicHeightInMapUnits;

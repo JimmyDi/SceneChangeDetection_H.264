@@ -253,7 +253,7 @@ static void free_encoder (EncoderParams *p_Enc)
  */
 int main(int argc, char **argv)
 {
-	int e = 1;
+	
   init_time();
 #if MEMORY_DEBUG
   _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
@@ -270,26 +270,11 @@ int main(int argc, char **argv)
   encode_sequence(p_Enc->p_Vid, p_Enc->p_Inp);
 
 
-
-
-  printf("---------------------------------------------------------------\n");
-  printf("----------------------------Sysc 5404--------------------------\n");
-  printf("---------------------------------------------------------------\n");
-  printf(" Frame   Intra       Inter        Skip         IPR\n");
-  for (int h = 0; h < p_Enc->p_Vid->number_frame; h++) {
-	  char str1[25] = "";
-	  char str2[25] = "";
-
-	  printf("%4d", h);
-	  printf("%10d  ", p_Enc->p_Vid->bit_final[h][0][0]);
-	  printf("%10d  ", p_Enc->p_Vid->bit_final[h][1][0]);
-	  printf("%10d  ", p_Enc->p_Vid->bit_final[h][2][0]);
-	  printf("%15.6f\n", ((float)p_Enc->p_Vid->bit_final[h][0][0] / ((float)p_Enc->p_Vid->bit_final[h][1][0]+e)));
-	  
-	 
-  }
-  printf("---------------------------------------------------------------\n");
-  printf("---------------------------------------------------------------\n");
+  //Sysc 5404
+  IPR_Cal();
+  print_result();
+  Abr_Det();
+ 
   // terminate sequence
   free_encoder_memory(p_Enc->p_Vid, p_Enc->p_Inp);
 
@@ -324,6 +309,148 @@ static unsigned CeilLog2( unsigned uiVal)
   }
   return uiRet;
 }
+
+//Sysc 5404
+///////////////////////////////////////////
+//This function is used to calculate IPR
+///////////////////////////////////////////
+int IPR_Cal() {
+	int e = 1;
+	for (int h = 0; h < p_Enc->p_Vid->number_frame; h++) {
+		p_Enc->p_Vid->IPR[h] = (float)p_Enc->p_Vid->bit_final[h][0][0] / ((float)p_Enc->p_Vid->bit_final[h][1][0] + e);
+	}	
+	return 0;
+}
+///////////////////////////////////////////////////////////////////////////
+// This function is used to print the final result of processing
+///////////////////////////////////////////////////////////////////////////
+int print_result() {
+	int e = 1; // parameter in the equation of IPR
+	printf("---------------------------------------------------------------\n");
+	printf("----------------------------Sysc 5404--------------------------\n");
+	printf("---------------------------------------------------------------\n");
+	printf(" Frame   Intra       Inter        Skip         IPR\n");
+	for (int h = 0; h < p_Enc->p_Vid->number_frame; h++) {
+		printf("%4d", h);
+		printf("%10d  ", p_Enc->p_Vid->bit_final[h][0][0]);
+		printf("%10d  ", p_Enc->p_Vid->bit_final[h][1][0]);
+		printf("%10d  ", p_Enc->p_Vid->bit_final[h][2][0]);
+		//printf("%10d  ", (p_Enc->p_Vid->bit_final[h][0][0]+ p_Enc->p_Vid->bit_final[h][1][0]+ p_Enc->p_Vid->bit_final[h][2][0]));
+		printf("%15.6f\n", p_Enc->p_Vid->IPR[h]);
+	}
+	printf("---------------------------------------------------------------\n");
+	printf("---------------------------------------------------------------\n");
+	return 0;
+}
+//////////////////////////////////////////////////////////
+///This function is used to identify Abrupt Change
+//////////////////////////////////////////////////////////
+int Abr_Det() {
+	Boolean fun1 = 0;
+	Boolean fun2 = 0;
+	Boolean result = 0;
+	int i_start = 0;
+	int i_end = 0;
+	float plus_value = 0.0;
+	int M = 5;
+	int SKP_min_value = 0;
+	
+
+	for (int i = 0; i < p_Enc->p_Vid->number_frame; i++) {
+		fun1 = 0;
+		fun2 = 0;
+		result = 0;
+		i_start = i - M;
+		i_end = i + M;
+	
+
+		plus_value = 0.0;
+		SKP_min_value = 0;
+
+		if (i < M) {
+			i_start = 0;
+		}
+		if (p_Enc->p_Vid->number_frame - i < M) {
+			i_end = p_Enc->p_Vid->number_frame;
+		}
+		
+	
+
+
+		////////unequal 1
+		////////////////////////////////
+		for (int j = i_start; j < i_end; j++) {
+			plus_value += p_Enc->p_Vid->IPR[j];
+
+		}
+		plus_value = plus_value - p_Enc->p_Vid->IPR[i];
+		if (p_Enc->p_Vid->IPR[i] >= plus_value)
+		{
+			fun1 = 1;
+		}
+		////////unequal 2
+		////////////////////////////////
+		
+		for (int j = i_start; j < i_end-1; j++) {
+			if (p_Enc->p_Vid->bit_final[j][2][0] <= p_Enc->p_Vid->bit_final[j + 1][2][0]) 
+			    {
+					SKP_min_value = p_Enc->p_Vid->bit_final[j][2][0];
+			    }
+			else
+				SKP_min_value = p_Enc->p_Vid->bit_final[j+1][2][0];
+
+
+		}
+		if (p_Enc->p_Vid->bit_final[i][2][0]<= SKP_min_value)
+		{
+			fun2 = 1;
+
+		}
+
+		////////Final
+		////////////////////
+		if (fun1&fun2) {
+			p_Enc->p_Vid->AbrDet_Flag[i]=1;
+		}
+		else
+		{
+			p_Enc->p_Vid->AbrDet_Flag[i] = 0;
+
+		}
+		if(p_Enc->p_Vid->AbrDet_Flag[i] ==1)
+		printf("%d frame has scene change\n", i);
+
+
+	}
+
+
+
+	
+	
+
+	return 0;
+}
+//////////////////////////////////////////////////////////
+///This funciton is used to identify Gradual Change
+//////////////////////////////////////////////////////////
+int Gra_Det() {
+	return 0;
+}
+
+
+
+/////////////////////////////////////////////////////////
+///This function is used to find out minimum value
+/////////////////////////////////////////////////////////
+
+
+
+/////////////////////////////////////////////////////////
+///This function is used to find out max value
+/////////////////////////////////////////////////////////
+
+
+
 
 void set_dpb_layer_id(VideoParameters *p_Vid, int idx)
 {
