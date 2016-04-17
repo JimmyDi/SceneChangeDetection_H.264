@@ -249,6 +249,7 @@ static int start_slice(Slice *currSlice, StatParameters *cur_stats)
   }
 #endif
   return header_len;
+
 }
 
 /*!
@@ -483,6 +484,8 @@ int encode_one_slice (VideoParameters *p_Vid, int SliceGroupId, int TotalCodedMB
   if(currSlice->UseRDOQuant == 1 && currSlice->RDOQ_QP_Num > 1)
     get_dQP_table(currSlice);
 
+  int bit_slice[3][1] = { {0},{0},{0} };
+
   while (end_of_slice == FALSE) // loop over macroblocks
   {
     Boolean recode_macroblock = FALSE;
@@ -532,6 +535,14 @@ int encode_one_slice (VideoParameters *p_Vid, int SliceGroupId, int TotalCodedMB
       }
       NumberOfCodedMBs++;       // only here we are sure that the coded MB is actually included in the slice
       next_macroblock (currMB);
+	  
+	  
+	  //Sysc 5404
+	  bit_slice[0][0] += currMB->bit_macroblock[0][0];//intra
+	  bit_slice[1][0] += currMB->bit_macroblock[1][0];//inter
+	  bit_slice[2][0] += currMB->bit_macroblock[2][0];//skip
+	  
+
     }
     else
     {
@@ -546,6 +557,19 @@ int encode_one_slice (VideoParameters *p_Vid, int SliceGroupId, int TotalCodedMB
       }
     }
   }
+
+  
+      //Sysc 5404
+	  //printf("%d  ", bit_slice[0][0]);
+	//  printf("%d  ", bit_slice[1][0]);
+	//  printf("%d\n", bit_slice[2][0]);
+       
+	  p_Vid->bit_plane[0][0] += bit_slice[0][0];
+	  p_Vid->bit_plane[1][0] += bit_slice[1][0];
+	  p_Vid->bit_plane[2][0] += bit_slice[2][0];
+  
+
+
 
 
   if ((p_Inp->WPIterMC) && (p_Vid->frameOffsetAvail == 0) && p_Vid->nal_reference_idc)
@@ -611,6 +635,8 @@ int encode_one_slice_MBAFF (VideoParameters *p_Vid, int SliceGroupId, int TotalC
   p_Vid->checkref = (short) (p_Inp->rdopt && p_Inp->RestrictRef && (currSlice->slice_type == P_SLICE || currSlice->slice_type == SP_SLICE));
 
   len = start_slice (currSlice, cur_stats);
+
+
 
   // Rate control
   if (p_Inp->RCEnable)

@@ -798,30 +798,6 @@ int intra_pred_4x4_normal(Macroblock *currMB,    //!< current macroblock
   byte predmode = p_Vid->ipredmode[img_block_y][img_block_x];
   currMB->ipmode_DPCM = predmode; //For residual DPCM
 
-
-  char string[5];
-  itoa(p_Vid->ipredmode[img_block_y][img_block_x], string, 10);
-
-  FILE *fp;
-  fp = fopen("4x4.txt", "a");
-  fputs(string, fp);
-  fclose(fp);
-		 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  // printf("%d", p_Vid->ipredmode[img_block_y][img_block_x]);
-	
-  //Count4 *countMode;
-
   switch (predmode)
   {
   case DC_PRED:

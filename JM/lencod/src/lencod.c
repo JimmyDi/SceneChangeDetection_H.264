@@ -253,6 +253,7 @@ static void free_encoder (EncoderParams *p_Enc)
  */
 int main(int argc, char **argv)
 {
+	int e = 1;
   init_time();
 #if MEMORY_DEBUG
   _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
@@ -268,12 +269,39 @@ int main(int argc, char **argv)
   // encode sequence
   encode_sequence(p_Enc->p_Vid, p_Enc->p_Inp);
 
+
+
+
+  printf("---------------------------------------------------------------\n");
+  printf("----------------------------Sysc 5404--------------------------\n");
+  printf("---------------------------------------------------------------\n");
+  printf(" Frame   Intra       Inter        Skip         IPR\n");
+  for (int h = 0; h < p_Enc->p_Vid->number_frame; h++) {
+	  char str1[25] = "";
+	  char str2[25] = "";
+
+	  printf("%4d", h);
+	  printf("%10d  ", p_Enc->p_Vid->bit_final[h][0][0]);
+	  printf("%10d  ", p_Enc->p_Vid->bit_final[h][1][0]);
+	  printf("%10d  ", p_Enc->p_Vid->bit_final[h][2][0]);
+	  printf("%15.6f\n", ((float)p_Enc->p_Vid->bit_final[h][0][0] / ((float)p_Enc->p_Vid->bit_final[h][1][0]+e)));
+	  
+	 
+  }
+  printf("---------------------------------------------------------------\n");
+  printf("---------------------------------------------------------------\n");
   // terminate sequence
   free_encoder_memory(p_Enc->p_Vid, p_Enc->p_Inp);
 
+
+  
   free_params (p_Enc->p_Inp);  
   free_encoder(p_Enc);
+  //Sysc 5404    print finla result
+  
+ 
 
+  while (1);
   return 0;
 }
 
@@ -888,6 +916,7 @@ static void encode_sequence(VideoParameters *p_Vid, InputParameters *p_Inp)
   int frames_to_code;
   int frame_num_bak = 0, frame_coded;
   int frm_struct_buffer;
+  p_Vid->number_frame = 0;
   SeqStructure *p_seq_struct = p_Vid->p_pred;
   FrameUnitStruct *p_frm;
 
@@ -908,8 +937,12 @@ static void encode_sequence(VideoParameters *p_Vid, InputParameters *p_Inp)
     frm_struct_buffer = p_Vid->frm_struct_buffer;
   }
   
+  memset(p_Vid->bit_final, 0, sizeof(p_Vid->bit_final));
+  p_Vid->number_frame = frames_to_code;
   for (curr_frame_to_code = 0; curr_frame_to_code < frames_to_code; curr_frame_to_code++)
   {
+	  
+
 #if (MVC_EXTENSION_ENABLE)
     if ( p_Inp->num_of_views == 2 )
     {
@@ -981,7 +1014,11 @@ static void encode_sequence(VideoParameters *p_Vid, InputParameters *p_Inp)
       set_redundant_frame(p_Vid, p_Inp);
     }
 
+
+
     frame_coded = encode_one_frame(p_Vid, p_Inp); // encode one frame;
+
+
     if ( !frame_coded )
     {
       p_Vid->frame_num = p_Vid->p_CurrEncodePar->frame_num = frame_num_bak;
@@ -1013,12 +1050,27 @@ static void encode_sequence(VideoParameters *p_Vid, InputParameters *p_Inp)
       }
     }
 
+	p_Vid->bit_final[p_Vid->frm_no_in_file][0][0] += p_Vid->bit_frame[0][0];
+	p_Vid->bit_final[p_Vid->frm_no_in_file][1][0] += p_Vid->bit_frame[1][0];
+	p_Vid->bit_final[p_Vid->frm_no_in_file][2][0] += p_Vid->bit_frame[2][0];
+
     if (p_Inp->ReportFrameStats)
     {
       report_frame_statistic(p_Vid, p_Inp);
     }
 
-  }
+  
+	
+	
+	//printf("This is frame: %d\n", curr_frame_to_code);
+	//printf("%d  ", p_Vid->bit_final[curr_frame_to_code][0][0]);
+	//printf("%d  ", p_Vid->bit_final[curr_frame_to_code][1][0]);
+	//printf("%d\n  ", p_Vid->bit_final[curr_frame_to_code][2][0]);
+}
+
+
+
+
 
 #if EOS_OUTPUT
   end_of_stream(p_Vid);

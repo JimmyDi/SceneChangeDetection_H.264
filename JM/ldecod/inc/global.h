@@ -1018,15 +1018,6 @@ typedef struct inp_par
   int dpb_plus[2];
 } InputParameters;
 
-typedef struct con_4
-{
-	
-	int modeSelection4[100];
-	int modeSelection8[10];
-	int *modeSelection16[10];
-	
-}Count4[];
-
 typedef struct old_slice_par
 {
   unsigned field_pic_flag;   

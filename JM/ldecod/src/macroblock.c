@@ -1220,24 +1220,10 @@ static int decode_one_component_i_slice(Macroblock *currMB, ColorPlane curr_plan
   currMB->ipmode_DPCM = NO_INTRA_PMODE; 
   if(currMB->mb_type == IPCM)
     mb_pred_ipcm(currMB);
-  else if (currMB->mb_type==I16MB){
-  
-	  mb_pred_intra16x16(currMB, curr_plane, dec_picture);
-	  //printf("%d", currMB->i16mode);
-  }
-   
-  else if (currMB->mb_type == I4MB){
-	  mb_pred_intra4x4(currMB, curr_plane, currImg, dec_picture);
-	  //VideoParameters *p_Vid = currMB->p_Vid;
-	 // for (int di_i = 0; di_i < 4; di_i++) {
-		//  for (int di_j = 0; di_j < 4; di_j++) {
-	//		  printf("%d",p_Vid->ipredmode[di_i][di_j]);
-	//	  }
-	//  }
-  }
-   
-	  
- 
+  else if (currMB->mb_type==I16MB)
+    mb_pred_intra16x16(currMB, curr_plane, dec_picture);
+  else if (currMB->mb_type == I4MB)
+    mb_pred_intra4x4(currMB, curr_plane, currImg, dec_picture);
   else if (currMB->mb_type == I8MB) 
     mb_pred_intra8x8(currMB, curr_plane, currImg, dec_picture);
 
@@ -1259,9 +1245,7 @@ static int decode_one_component_p_slice(Macroblock *currMB, ColorPlane curr_plan
   else if (currMB->mb_type==I16MB)
     mb_pred_intra16x16(currMB, curr_plane, dec_picture);
   else if (currMB->mb_type == I4MB)
- 
-	  mb_pred_intra4x4(currMB, curr_plane, currImg, dec_picture);
-	
+    mb_pred_intra4x4(currMB, curr_plane, currImg, dec_picture);
   else if (currMB->mb_type == I8MB) 
     mb_pred_intra8x8(currMB, curr_plane, currImg, dec_picture);
   else if (currMB->mb_type == PSKIP)
@@ -1331,10 +1315,7 @@ static int decode_one_component_b_slice(Macroblock *currMB, ColorPlane curr_plan
   else if (currMB->mb_type==I16MB)
     mb_pred_intra16x16(currMB, curr_plane, dec_picture);
   else if (currMB->mb_type == I4MB)
-
-	  mb_pred_intra4x4(currMB, curr_plane, currImg, dec_picture);
-	
-
+    mb_pred_intra4x4(currMB, curr_plane, currImg, dec_picture);
   else if (currMB->mb_type == I8MB) 
     mb_pred_intra8x8(currMB, curr_plane, currImg, dec_picture);  
   else if (currMB->mb_type == P16x16)
@@ -1447,7 +1428,6 @@ int decode_one_macroblock(Macroblock *currMB, StorablePicture *dec_picture)
   else
   {
     currSlice->decode_one_component(currMB, PLANE_Y, dec_picture->imgY, dec_picture);
-
   }
 
   return 0;

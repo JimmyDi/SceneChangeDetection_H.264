@@ -744,27 +744,8 @@ void decode_slice(Slice *currSlice, int current_header)
   //printf("frame picture %d %d %d\n",currSlice->structure,currSlice->ThisPOC,currSlice->direct_spatial_mv_pred_flag);
 
   // decode main slice information
-  if ((current_header == SOP || current_header == SOS) && currSlice->ei_flag == 0){
-	  decode_one_slice(currSlice);
-
-	 /* char string[5];
-	  itoa(currSlice->view_id, string, 10);
-	  FILE *fp;
-	  fp = fopen("hehe.txt", "a");
-	  fputs(string, fp);
-	  fclose(fp);*/
-	  FILE *fp;
-	  fp = fopen("4x4.txt", "a");
-	  fputs("next frame\n", fp); 
-	  fclose(fp);
-	  fp = fopen("8x8.txt", "a");
-	  fputs("next frame\n", fp);
-	  fclose(fp);
-	  fp = fopen("16x16.txt", "a");
-	  fputs("next frame\n", fp);
-	  fclose(fp);
-  }
-   
+  if ((current_header == SOP || current_header == SOS) && currSlice->ei_flag == 0)
+    decode_one_slice(currSlice);
 
   // setMB-Nr in case this slice was lost
   // if(currSlice->ei_flag)
@@ -2540,7 +2521,6 @@ void decode_one_slice(Slice *currSlice)
     // Get the syntax elements from the NAL
     currSlice->read_one_macroblock(currMB);
     decode_one_macroblock(currMB, currSlice->dec_picture);
-	
 
     if(currSlice->mb_aff_frame_flag && currMB->mb_field)
     {

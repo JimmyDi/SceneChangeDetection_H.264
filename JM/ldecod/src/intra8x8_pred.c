@@ -1507,15 +1507,7 @@ int intra_pred_8x8_normal(Macroblock *currMB,    //!< Current Macroblock
   byte predmode = currMB->p_Slice->ipredmode[block_y][block_x];
 
   currMB->ipmode_DPCM = predmode;  //For residual DPCM
-  char string[5];
-  itoa(currMB->p_Slice->ipredmode[block_y][block_x], string, 10);
-  
-  FILE *fp;
-  fp = fopen("8x8.txt", "a");
-  fputs(string, fp);
-  fclose(fp);
 
-  //printf("%d", currMB->p_Slice->ipredmode[block_y][block_x]);
   switch (predmode)
   {
   case DC_PRED:

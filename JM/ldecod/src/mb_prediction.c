@@ -53,8 +53,8 @@ int mb_pred_intra4x4(Macroblock *currMB, ColorPlane curr_plane, imgpel **currImg
   {
     for (k = block8x8 * 4; k < block8x8 * 4 + 4; k ++)
     {
-      i =  (decode_block_scan[k] & 3);       //last 2
-      j = ((decode_block_scan[k] >> 2) & 3);//first 2
+      i =  (decode_block_scan[k] & 3);
+      j = ((decode_block_scan[k] >> 2) & 3);
 
       ioff = (i << 2);
       joff = (j << 2);
@@ -67,16 +67,9 @@ int mb_pred_intra4x4(Macroblock *currMB, ColorPlane curr_plane, imgpel **currImg
       //===== INTRA PREDICTION =====
       if (currSlice->intra_pred_4x4(currMB, curr_plane, ioff,joff,i4,j4) == SEARCH_SYNC)  /* make 4x4 prediction block mpr from given prediction p_Vid->mb_mode */
         return SEARCH_SYNC;                   /* bit error */
-	  
-											  
-											  // =============== 4x4 itrans ================
+      // =============== 4x4 itrans ================
       // -------------------------------------------
       currMB->itrans_4x4  (currMB, curr_plane, ioff, joff);
-
-	  
-	  
-
-	  
 
       copy_image_data_4x4(&currImg[j_pos], &currSlice->mb_rec[curr_plane][joff], i_pos, ioff);
     }

@@ -452,6 +452,10 @@ typedef struct macroblock_enc
   struct macroblock_enc   *mb_up;   //!< pointer to neighboring MB (CABAC)
   struct macroblock_enc   *mb_left; //!< pointer to neighboring MB (CABAC)
   struct macroblock_enc   *PrevMB;
+  
+  //SYSC 5404
+  int bit_macroblock[3][1];
+  int bit_slice[3][1];
 
   // Functions
   void (*GetMVPredictor) (struct macroblock_enc *currMB, PixelPos *block, MotionVector *pmv, short ref_frame, 
@@ -806,6 +810,7 @@ typedef struct slice
   void (*set_modes_and_reframe)    (Macroblock *currMB, int b8, short* p_dir, int list_mode[2], char *list_ref_idx);
   void (*store_8x8_motion_vectors) (struct slice *currSlice, int dir, int block8x8, Info8x8 *B8x8Info);
   distblk (*getDistortion)         ( Macroblock *currMB );  
+  int slice_bit_total[3][1];
 
 } Slice;
 
@@ -1524,6 +1529,13 @@ typedef struct video_par
   unsigned char chroma_mask_mv_x;
   int chroma_shift_y, chroma_shift_x;
   int shift_cr_x, shift_cr_y;
+ 
+  //Sysc 5404     definition
+  int bit_plane[3][1];
+  int bit_frame[3][1];
+  int bit_picture[3][1];
+  int bit_final[300][3][1];
+  int number_frame;
 
   unsigned int PicWidthInMbs;
   unsigned int PicHeightInMapUnits;
@@ -1628,6 +1640,11 @@ static inline int is_MVC_profile(unsigned int profile_idc)
 static inline int is_intra(Macroblock *curr_MB)
 {
   return ((curr_MB)->mb_type==SI4MB || (curr_MB)->mb_type==I4MB || (curr_MB)->mb_type==I16MB || (curr_MB)->mb_type==I8MB || (curr_MB)->mb_type==IPCM);
+}
+
+static inline int is_inter(Macroblock *curr_MB) 
+{
+	return ((curr_MB)->mb_type == SI4MB || (curr_MB)->mb_type == I4MB || (curr_MB)->mb_type == I16MB || (curr_MB)->mb_type == I8MB || (curr_MB)->mb_type == IPCM);
 }
 
 

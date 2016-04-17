@@ -167,20 +167,21 @@ enum {
 enum {
   PSKIP        =  0,
   BSKIP_DIRECT =  0,
-  P16x16       =  1,
-  P16x8        =  2,
-  P8x16        =  3,
-  SMB8x8       =  4,
-  SMB8x4       =  5,
-  SMB4x8       =  6,
-  SMB4x4       =  7,
-  P8x8         =  8,
-  I4MB         =  9,
-  I16MB        = 10,
+  P16x16       =  1,//inter
+  P16x8        =  2,//inter
+  P8x16        =  3,//inter
+  SMB8x8       =  4,//inter
+  SMB8x4       =  5,//inter
+  SMB4x8       =  6,//inter
+  SMB4x4       =  7,//inter
+  P8x8         =  8,//inter
+
+  I4MB         =  9,//intra
+  I16MB        = 10,//intra
   IBLOCK       = 11,
-  SI4MB        = 12,
-  I8MB         = 13,
-  IPCM         = 14,
+  SI4MB        = 12,  //intra
+  I8MB         = 13,//intra
+  IPCM         = 14,//intra
   MAXMODE      = 15
 } MBModeTypes;
 

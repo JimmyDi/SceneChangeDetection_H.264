@@ -86,37 +86,37 @@ char *GetConfigFileContent (char *Filename)
 
   if (NULL == (f = fopen (Filename, "r")))
   {
-      snprintf (errortext, ET_SIZE, "Cannot open configuration file %s.", Filename);    //input to errortext open error ,cannot open the file
+      snprintf (errortext, ET_SIZE, "Cannot open configuration file %s.", Filename);
       return NULL;
   }
 
-  if (0 != fseek (f, 0, SEEK_END))     //relocate from SEEK_END ,OFFSET is 0.   return 0 is success, else return other number.
+  if (0 != fseek (f, 0, SEEK_END))
   {
-    snprintf (errortext, ET_SIZE, "Cannot fseek in configuration file %s.", Filename);  //
+    snprintf (errortext, ET_SIZE, "Cannot fseek in configuration file %s.", Filename);
     return NULL;
   }
 
-  FileSize = ftell (f);  // tell the offset
+  FileSize = ftell (f);
 
-  if (FileSize < 0 || FileSize > 150000)     // offset <0 or >150000
+  if (FileSize < 0 || FileSize > 150000)
   {
     snprintf (errortext, ET_SIZE, "\nUnreasonable Filesize %ld reported by ftell for configuration file %s.", FileSize, Filename);
     return NULL;
   }
-  if (0 != fseek (f, 0, SEEK_SET))    //relocate
+  if (0 != fseek (f, 0, SEEK_SET))
   {
-    snprintf (errortext, ET_SIZE, "Cannot fseek in configuration file %s.", Filename);   // cannot relocate
+    snprintf (errortext, ET_SIZE, "Cannot fseek in configuration file %s.", Filename);
     return NULL;
   }
 
-  if ((buf = malloc (FileSize + 1))==NULL) no_mem_exit("GetConfigFileContent: buf"); // assign room , if Null, fail
+  if ((buf = malloc (FileSize + 1))==NULL) no_mem_exit("GetConfigFileContent: buf");
 
   // Note that ftell() gives us the file size as the file system sees it.  The actual file size,
   // as reported by fread() below will be often smaller due to CR/LF to CR conversion and/or
   // control characters after the dos EOF marker in the file.
 
-  FileSize = (long) fread (buf, 1, FileSize, f);//return the number of element, each element is i byte and read FileSize elements
-  buf[FileSize] = '\0';   //end with \0
+  FileSize = (long) fread (buf, 1, FileSize, f);
+  buf[FileSize] = '\0';
 
 
   fclose (f);
@@ -146,8 +146,8 @@ void ParseContent (InputParameters *p_Inp, Mapping *Map, char *buf, int bufsize)
   int MapIdx;
   int item = 0;
   int InString = 0, InItem = 0;
-  char *p = buf;                // p->content
-  char *bufend = &buf[bufsize];   //bufend->bufsize
+  char *p = buf;
+  char *bufend = &buf[bufsize];
   int IntContent;
   double DoubleContent;
   int i;
@@ -175,7 +175,7 @@ void ParseContent (InputParameters *p_Inp, Mapping *Map, char *buf, int bufsize)
       *p++='\0';
       break;
     case ' ':
-    case '\t':              // Skip whitespace, leave state unchanged    press "Tab"
+    case '\t':              // Skip whitespace, leave state unchanged
       if (InString)
         p++;
       else
@@ -211,7 +211,7 @@ void ParseContent (InputParameters *p_Inp, Mapping *Map, char *buf, int bufsize)
 
   for (i=0; i<item; i+= 3)
   {
-    if (0 > (MapIdx = ParameterNameToMapIndex (Map, items[i])))  // return the position in items to MapIdx
+    if (0 > (MapIdx = ParameterNameToMapIndex (Map, items[i])))
     {
       //snprintf (errortext, ET_SIZE, " Parsing error in config file: Parameter Name '%s' not recognized.", items[i]);
       //error (errortext, 300);
@@ -300,10 +300,10 @@ int InitParams(Mapping *Map)
 
   while (Map[i].TokenName != NULL)
   {
-    if (Map[i].Type == 0)   //int
+    if (Map[i].Type == 0)
         * (int *) (Map[i].Place) = (int) Map[i].Default;
     else if (Map[i].Type == 2)
-    * (double *) (Map[i].Place) = Map[i].Default;    //double
+    * (double *) (Map[i].Place) = Map[i].Default;
       i++;
   }
   return -1;

@@ -324,14 +324,6 @@ int intra_pred_16x16_normal(Macroblock *currMB,  //!< Current Macroblock
                            ColorPlane pl,       //!< Current colorplane (for 4:4:4)                         
                            int predmode)        //!< prediction mode
 {
-	//printf("%d", predmode);
-	char string[5];
-	itoa(predmode, string, 10);
-
-	FILE *fp;
-	fp = fopen("16x16.txt", "a");
-	fputs(string, fp);
-	fclose(fp);
   switch (predmode)
   {
   case VERT_PRED_16:                       // vertical prediction from block above

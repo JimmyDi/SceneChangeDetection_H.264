@@ -420,6 +420,8 @@ void report_stats(VideoParameters *p_Vid, InputParameters *p_Inp, StatParameters
   fprintf(p_stat," %10.2f     |", (float) p_Stats->bit_use_header[I_SLICE] / bit_use[I_SLICE][0]);
   fprintf(p_stat," %10.2f     |", (float) p_Stats->bit_use_header[P_SLICE] / bit_use[P_SLICE][0]);
   fprintf(p_stat," %10.2f     |", (float) p_Stats->bit_use_header[B_SLICE] / bit_use[B_SLICE][0]);
+  
+  
 
   fprintf(p_stat,"\n Mode                 |");
   fprintf(p_stat," %10.2f     |", (float)p_Stats->bit_use_mb_type[I_SLICE] / bit_use[I_SLICE][0]);
@@ -732,7 +734,8 @@ void report( VideoParameters *p_Vid, InputParameters *p_Inp, StatParameters *p_S
       bit_use[j][1] += p_Stats->bit_use_mode[j][i];
 
     bit_use[j][1] += p_Stats->bit_use_mb_type[j];
-    bit_use[j][1] += p_Stats->bit_use_header[j];    
+    bit_use[j][1] += p_Stats->bit_use_header[j];
+	//printf("\n\n%d\n\n", p_Stats->bit_use_header[j]);
     bit_use[j][1] += p_Stats->tmp_bit_use_cbp[j];
     bit_use[j][1] += p_Stats->bit_use_coeffC[j];
     bit_use[j][1] += p_Stats->bit_use_coeff[0][j];   

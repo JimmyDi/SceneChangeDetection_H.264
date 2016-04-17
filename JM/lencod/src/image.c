@@ -200,14 +200,30 @@ static void code_a_plane(VideoParameters *p_Vid, InputParameters *p_Inp)
   reset_pic_bin_count(p_Vid);
   p_Vid->bytes_in_picture = 0;
 
+  //int bit_plane[3][1];
+  memset(p_Vid->bit_plane, 0, sizeof(p_Vid->bit_plane));
+
+  
+
+
   while (NumberOfCodedMBs < p_Vid->PicSizeInMbs)       // loop over slices
   {
     // Encode one SLice Group
     while (!FmoSliceGroupCompletelyCoded (p_Vid, SliceGroup))
     {
       // Encode the current slice
-      if (!p_Vid->mb_aff_frame_flag)
-        NumberOfCodedMBs += encode_one_slice (p_Vid, SliceGroup, NumberOfCodedMBs);
+		if (!p_Vid->mb_aff_frame_flag)
+		{
+			NumberOfCodedMBs += encode_one_slice(p_Vid, SliceGroup, NumberOfCodedMBs);
+			
+			//Sysc 5404     bits of plane
+			//bit_plane[0][0] += p_Vid->bit_plane[0][0];
+			//bit_plane[1][0] += p_Vid->bit_plane[1][0];
+			//bit_plane[2][0] += p_Vid->bit_plane[2][0];
+			
+
+		}
+
       else
         NumberOfCodedMBs += encode_one_slice_MBAFF (p_Vid, SliceGroup, NumberOfCodedMBs);
 
@@ -217,8 +233,18 @@ static void code_a_plane(VideoParameters *p_Vid, InputParameters *p_Inp)
       p_Vid->p_Stats->bit_slice = 0;
     }
     // Proceed to next SliceGroup
-    SliceGroup++;
+   
+	SliceGroup++;
   }
+
+
+  //Sysc 5404   print result of bits in each plane
+  //printf("%d  ", bit_plane[0][0]);
+ // printf("%d  ", bit_plane[1][0]);
+ // printf("%d\n", bit_plane[2][0]);
+
+
+
   FmoEndPicture ();
 
   if ((p_Inp->SkipDeBlockNonRef == 0) || (p_Vid->nal_reference_idc != 0))
@@ -264,6 +290,11 @@ static void code_a_picture(VideoParameters *p_Vid, Picture *pic)
 {
   InputParameters *p_Inp = p_Vid->p_Inp;
   int pl;
+  int frame_number=0;
+  
+  memset(p_Vid->bit_frame, 0, sizeof(p_Vid->bit_frame));
+
+
 
   p_Vid->currentPicture = pic;
   p_Vid->currentPicture->idr_flag = get_idr_flag(p_Vid);
@@ -284,15 +315,28 @@ static void code_a_picture(VideoParameters *p_Vid, Picture *pic)
       p_Vid->colour_plane_id = (char) pl;
       
       code_a_plane(p_Vid, p_Inp);
+	  p_Vid->bit_frame[0][0] += p_Vid->bit_plane[0][0]; 
+	  p_Vid->bit_frame[1][0] += p_Vid->bit_plane[1][0];
+	  p_Vid->bit_frame[2][0] += p_Vid->bit_plane[2][0];
     }
+
+	  
+	
+
+
+
   }
   else
   {
     code_a_plane(p_Vid, p_Inp);
+	p_Vid->bit_frame[0][0] += p_Vid->bit_plane[0][0];
+	p_Vid->bit_frame[1][0] += p_Vid->bit_plane[1][0];
+	p_Vid->bit_frame[2][0] += p_Vid->bit_plane[2][0];
   }
 
   if (p_Vid->mb_aff_frame_flag)
     MbAffPostProc(p_Vid);
+
 
 }
 
@@ -1631,6 +1675,9 @@ void frame_picture (VideoParameters *p_Vid, Picture *frame, ImageData *imgData, 
   p_Vid->p_curr_pic = p_Vid->p_curr_frm_struct->p_frame_pic;
   p_Vid->structure = FRAME;
   p_Vid->PicSizeInMbs = p_Vid->FrameSizeInMbs;
+
+ 
+
   //set mv limits to frame type
   update_mv_limits(p_Vid, FALSE);
 
@@ -1652,6 +1699,13 @@ void frame_picture (VideoParameters *p_Vid, Picture *frame, ImageData *imgData, 
 
   p_Vid->fld_flag = FALSE;
   code_a_picture(p_Vid, frame);
+  //Sysc 5404
+ // printf("%d", p_Vid->bit_frame[0][0]);
+ // printf("%d", p_Vid->bit_frame[1][0]);
+ // printf("%d", p_Vid->bit_frame[2][0]);
+
+
+  
 
   if( (p_Inp->separate_colour_plane_flag != 0) )
   {

@@ -136,22 +136,22 @@ void ParseCommand(InputParameters *p_Inp, int ac, char *av[])
 
   if (ac==2)
   {
-    if (0 == strncmp (av[1], "-v", 2))   // if av[1] equals "-v"
+    if (0 == strncmp (av[1], "-v", 2))
     {
       printf("JM " JM ": compiled " __DATE__ " " __TIME__ "\n");
       exit(-1);
     }
 
-    if (0 == strncmp (av[1], "-h", 2))   // if av[1] equals "-h"
+    if (0 == strncmp (av[1], "-h", 2))
     {
-      JMDecHelpExit();                   // print help information
+      JMDecHelpExit();
     }
   }
 
-  memcpy (&cfgparams, p_Inp, sizeof (InputParameters));   // copy size of bytes from p_Inp to cfgparams
+  memcpy (&cfgparams, p_Inp, sizeof (InputParameters));
   //Set default parameters.
   printf ("Setting Default Parameters...\n");
-  InitParams(Map);     //set initial values for encoding parameters
+  InitParams(Map);
 
   *p_Inp = cfgparams;
   // Process default config file
@@ -162,9 +162,9 @@ void ParseCommand(InputParameters *p_Inp, int ac, char *av[])
     if ((strlen(av[1])==2) && (0 == strncmp (av[1], "-d", 2)))
     {
       if(0 == strncmp (av[2], "null", 4))
-        filename=NULL;                //if no filename information,filename = NULL
+        filename=NULL;
       else
-        filename=av[2];               // else filename = av[2]
+        filename=av[2];
       CLcount = 3;
     }
     if (0 == strncmp (av[1], "-h", 2))
@@ -175,11 +175,11 @@ void ParseCommand(InputParameters *p_Inp, int ac, char *av[])
   if(filename)
   {
     printf ("Parsing Configfile %s\n", filename);
-    content = GetConfigFileContent (filename);     //return reading stream , end with /0
-    if (NULL != content)     // the content is not null
+    content = GetConfigFileContent (filename);
+    if (NULL != content)
     {
       //error (errortext, 300);
-      ParseContent (p_Inp, Map, content, (int) strlen(content));  //parse content
+      ParseContent (p_Inp, Map, content, (int) strlen(content));
       printf ("\n");
       free (content);
     }

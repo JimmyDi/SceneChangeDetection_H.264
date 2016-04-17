@@ -162,11 +162,18 @@ void next_macroblock(Macroblock *currMB)
   int i;
   StatParameters *cur_stats = &p_Vid->enc_picture->stats;
 
+  //Sysc 5404
+  for (int z = 0; z < 3; z++) {
+	  currMB->bit_macroblock[z][0] = 0;
+  }
+
+
   if (mbBits->mb_total > p_Vid->max_bitCount)
     printf("Warning!!! Number of bits (%d) of macroblock_layer() data seems to exceed defined limit (%d).\n", mbBits->mb_total,p_Vid->max_bitCount);
 
   // Update the statistics
   cur_stats->bit_use_mb_type[slice_type]       += mbBits->mb_mode;
+  //printf("papapa      %d\n", mbBits->mb_mode);
   cur_stats->tmp_bit_use_cbp[slice_type]       += mbBits->mb_cbp;
   cur_stats->bit_use_coeffC[slice_type]        += mbBits->mb_uv_coeff;
   cur_stats->bit_use_coeff[0][slice_type]      += mbBits->mb_y_coeff;
@@ -174,6 +181,13 @@ void next_macroblock(Macroblock *currMB)
   cur_stats->bit_use_coeff[2][slice_type]      += mbBits->mb_cr_coeff;
   cur_stats->bit_use_delta_quant[slice_type]   += mbBits->mb_delta_quant;
   cur_stats->bit_use_stuffing_bits[slice_type] += mbBits->mb_stuffing;
+
+
+
+	 
+	  
+
+
 
   if (is_intra(currMB))
   {
@@ -218,6 +232,33 @@ void next_macroblock(Macroblock *currMB)
   // Statistics
   cur_stats->quant[slice_type] += currMB->qp;
   ++cur_stats->num_macroblocks[slice_type];
+
+  
+  int l = 0;
+  //identify what kind of block is  and accumulate the total bit,sysc 5404
+  if (is_intra(currMB)|| currMB->mb_type == IBLOCK) {
+	  currMB->bit_macroblock[0][0] += mbBits->mb_total;//intra mode
+	 
+  }
+  else if ((currSlice->slice_type == P_SLICE && currMB->mb_type == PSKIP)||( currMB->mb_type == BSKIP_DIRECT)) {
+	  currMB->bit_macroblock[2][0] += mbBits->mb_total;//skip mode
+	  
+  } else if(currMB->mb_type == P16x16 || currMB->mb_type == P16x8 || currMB->mb_type == P8x16
+				   || currMB->mb_type == SMB8x8 || currMB->mb_type == SMB8x4 || currMB->mb_type == SMB4x8 
+				   || currMB->mb_type == SMB4x4 || currMB->mb_type == P8x8){
+			   	  currMB->bit_macroblock[1][0] += mbBits->mb_total;//inter mode
+			   	  l++;
+			    }
+
+  //else if(currMB->mb_type == PSKIP){
+//	  currMB->bit_macroblock[1][0] += mbBits->mb_total;//inter mode
+//	  l++;
+//  }
+ 
+  //if (l == 1) {
+//	  printf("inter\n");
+ // }
+  
 }
 
 static void set_chroma_qp(Macroblock* currMB)
@@ -1197,6 +1238,8 @@ void luma_residual_coding (Macroblock *currMB)
   // the following parameters are not useful and should be removed for profiles < P444
   currSlice->cmp_cbp[1] = currSlice->cmp_cbp[2] = 0;
   currSlice->cur_cbp_blk[1] = currSlice->cur_cbp_blk[2] = 0;
+
+
 
   if (is_skip)
   {

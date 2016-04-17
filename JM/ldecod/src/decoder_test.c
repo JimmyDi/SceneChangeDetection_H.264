@@ -44,7 +44,7 @@ static void Configure(InputParameters *p_Inp, int ac, char *av[])
   strcpy(p_Inp->LeakyBucketParamFile,"leakybucketparam.cfg");    // file where Leaky Bucket parameters (computed by encoder) are stored
 #endif
 
-  ParseCommand(p_Inp, ac, av);     //ac number of command lines, av command line parameters
+  ParseCommand(p_Inp, ac, av);
 
   fprintf(stdout,"----------------------------- JM %s %s -----------------------------\n", VERSION, EXT_VERSION);
   //fprintf(stdout," Decoder config file                    : %s \n",config_filename);
@@ -214,14 +214,11 @@ static int WriteOneFrame(DecodedPicList *pDecPic, int hFileOutput0, int hFileOut
  */
 int main(int argc, char **argv)
 {
-
-
   int iRet;
   DecodedPicList *pDecPicList;
   int hFileDecOutput0=-1, hFileDecOutput1=-1;
   int iFramesOutput=0, iFramesDecoded=0;
   InputParameters InputParams;
-  Count4 *countMode;
 
 #if DECOUTPUT_TEST
   hFileDecOutput0 = open(DECOUTPUT_VIEW0_FILENAME, OPENFLAGS_WRITE, OPEN_PERMISSIONS);
@@ -230,28 +227,13 @@ int main(int argc, char **argv)
   fprintf(stdout, "Decoder output view1: %s\n", DECOUTPUT_VIEW1_FILENAME);
 #endif
 
+  init_time();
 
-  FILE *fp;
-  fp = fopen("4x4.txt", "w");
-  fputs("", fp);
-  fclose(fp);
-  
-  fp = fopen("8x8.txt", "w");
-  fputs("", fp);
-  fclose(fp);
- 
-  fp = fopen("16x16.txt", "w");
-  fputs("", fp);
-  fclose(fp);
-
-  init_time();    // real time
   //get input parameters;
-  Configure(&InputParams, argc, argv);    
+  Configure(&InputParams, argc, argv);
   //open decoder;
-   iRet = OpenDecoder(&InputParams);   //return 0 nonerror     <0 error
-  
-   
-  if(iRet == 1)    //DEC_OPEN_NOERR=0
+  iRet = OpenDecoder(&InputParams);
+  if(iRet != DEC_OPEN_NOERR)
   {
     fprintf(stderr, "Open encoder failed: 0x%x!\n", iRet);
     return -1; //failed;
@@ -289,9 +271,6 @@ int main(int argc, char **argv)
   }
 
   printf("%d frames are decoded.\n", iFramesDecoded);
-  
-  
-  while(1);
   return 0;
 }
 
