@@ -273,9 +273,13 @@ int main(int argc, char **argv)
   //Sysc 5404
   IPR_Cal();
   print_result();
+  printf("-----------Result of Abrupt Scene Change Detection--------------\n");
   Abr_Det();
+  printf("---------------------------------------------------------------\n\n");
+  printf("-----------Result of Gradual Scene Change Detection-------------\n");
   Gra_Det();
- 
+  printf("---------------------------------------------------------------\n\n");
+  NoChangeDetection();
   // terminate sequence
   free_encoder_memory(p_Enc->p_Vid, p_Enc->p_Inp);
 
@@ -322,17 +326,38 @@ int IPR_Cal() {
 	}	
 	return 0;
 }
+
+
+int NoChangeDetection() {
+	int flag_NoAbrDet = 0;
+	int flag_NoGraDet = 0;
+	for (int i = 0; i < p_Enc->p_Vid->number_frame; i++) {
+		if (p_Enc->p_Vid->AbrDet_Flag[i] = 1) {
+			flag_NoAbrDet += 1;
+		}
+		if (p_Enc->p_Vid->GraDet_Flag[i] = 1) {
+			flag_NoGraDet += 1;
+		}
+		
+	}
+	if (flag_NoAbrDet = 0)
+		printf("No Abrupt Scene Change!\n");
+	if (flag_NoGraDet = 0)
+		printf("No Gradual Scene Change!\n");
+
+
+	return 0;
+}
 ///////////////////////////////////////////////////////////////////////////
 // This function is used to print the final result of processing
 ///////////////////////////////////////////////////////////////////////////
 int print_result() {
 	int e = 1; // parameter in the equation of IPR
-	printf("---------------------------------------------------------------\n");
-	printf("----------------------------Sysc 5404--------------------------\n");
-	printf("---------------------------------------------------------------\n");
-	printf("---------------------------------------------------\n");
+	printf("\n");
+	printf("----------------------------Sysc 5404-----------------------------------------\n");
+	printf("---------------------------------------------------------\n");
 	printf(" Frame   Intra       Inter        Skip         IPR\n");
-	printf("---------------------------------------------------\n");
+	printf("---------------------------------------------------------\n");
 	for (int h = 0; h < p_Enc->p_Vid->number_frame; h++) {
 		printf("%4d", h);
 		printf("%10d  ", p_Enc->p_Vid->bit_final[h][0][0]);
@@ -341,8 +366,8 @@ int print_result() {
 		//printf("%10d  ", (p_Enc->p_Vid->bit_final[h][0][0]+ p_Enc->p_Vid->bit_final[h][1][0]+ p_Enc->p_Vid->bit_final[h][2][0]));
 		printf("%15.6f\n", p_Enc->p_Vid->IPR[h]);
 	}
-	printf("---------------------------------------------------------------\n");
-	printf("---------------------------------------------------------------\n");
+	printf("---------------------------------------------------------\n");
+	printf("\n");
 	return 0;
 }
 //////////////////////////////////////////////////////////
@@ -417,7 +442,7 @@ int Abr_Det() {
 			p_Enc->p_Vid->AbrDet_Flag[i] = 0;
 		}
 		if(p_Enc->p_Vid->AbrDet_Flag[i] ==1)
-		printf("%d frame has scene change\n", i);
+		printf("%d frame has abrupt scene change\n", i);
 	}
 	return 0;
 }
@@ -430,10 +455,10 @@ int Gra_Det() {
 	Boolean fun1 = 0;
 	Boolean fun2 = 0;
 	Boolean result = 0;
-	p_Enc->p_Vid->IPR1[300] = 0;
-	p_Enc->p_Vid->SKP1[300] = 0;
-	p_Enc->p_Vid->IPR2[300] = 0;
-	p_Enc->p_Vid->SKP2[300] = 0;
+	p_Enc->p_Vid->IPR1[300] = 0.0;
+	p_Enc->p_Vid->SKP1[300] = 0.0;
+	p_Enc->p_Vid->IPR2[300] = 0.0;
+	p_Enc->p_Vid->SKP2[300] = 0.0;
 	 
 	for (int z = 0; z < p_Enc->p_Vid->number_frame; z++) {
 		p_Enc->p_Vid->IPR1[z] = Median_IPR(z);
@@ -443,25 +468,39 @@ int Gra_Det() {
 	}
 	
 
-	int sum3_IPR = 0;
-	int Max_IPR = 0;
-	int Min_SKP = 0;
+	float sum3_IPR = 0.0;
+	float Max_IPR = 0.0;
+	float Min_SKP = 0;
 	
 	////////2 functions
 	////////////////////////////////
 
 	for (int z = 0; z < p_Enc->p_Vid->number_frame; z++) {
 		
+		int h_start = z - 20;
+		int h_end = z - 10;
+		fun1 = 0;
+		fun2 = 0;
 		////////unequal 1
 		////////////////////////////////
+		
+		if (h_start < 0) {
+			h_start = 0;
+		}
+		if (h_end < 0) {
+			h_end = 1;
+		}
+
+				
 		sum3_IPR = p_Enc->p_Vid->IPR2[z-1] + p_Enc->p_Vid->IPR2[z] + p_Enc->p_Vid->IPR2[z + 1];
 
-		for (int h=z - 20; h < (z - 10 + 1); h++) {
-			if (p_Enc->p_Vid->IPR2[h] <= p_Enc->p_Vid->IPR2[h + 1]) {
-				Max_IPR = p_Enc->p_Vid->IPR2[h + 1];
+		Max_IPR = p_Enc->p_Vid->IPR2[h_start];
+		for (int h= h_start; h < h_end; h++) {
+			if (p_Enc->p_Vid->IPR2[h] >= Max_IPR) {
+				Max_IPR = p_Enc->p_Vid->IPR2[h];
 			}
 			else
-				Max_IPR = p_Enc->p_Vid->IPR2[h];
+				Max_IPR = Max_IPR;
 		}
 		if (sum3_IPR>= Max_IPR)
 		{
@@ -470,12 +509,13 @@ int Gra_Det() {
 
 		////////unequal 2
 		////////////////////////////////
-		for (int h = z - 20; h < (z - 10 + 1); h++) {
-			if (p_Enc->p_Vid->bit_final[h][2][0] <= p_Enc->p_Vid->bit_final[h+1][2][0]) {
-				Min_SKP = p_Enc->p_Vid->bit_final[h][2][0];
+		Min_SKP = p_Enc->p_Vid->SKP2[h_start];
+		for (int h = h_start; h <h_end; h++) {
+			if (p_Enc->p_Vid->SKP2[h] <= Min_SKP) {
+				Min_SKP = p_Enc->p_Vid->SKP2[h];
 			}
 			else
-				Min_SKP = p_Enc->p_Vid->bit_final[h+1][2][0];
+				Min_SKP = Min_SKP;
 		}
 
 		if (p_Enc->p_Vid->SKP2[z] <= Min_SKP) {
@@ -491,7 +531,7 @@ int Gra_Det() {
 			p_Enc->p_Vid->GraDet_Flag[z] = 0;
 
 		if (p_Enc->p_Vid->GraDet_Flag[z]) {
-			printf("%d frame has gradual scene change",z);
+			printf("%d frame has gradual scene change\n",z);
 		}
 	}
 	
@@ -505,22 +545,27 @@ int Gra_Det() {
 ///These 2 functions are used to find out Median for IPR and SKP
 //////////////////////////////////////////////////////////////////////////
 int Median_IPR(int i) {
-	int Median = 0;
+	float Median = 0.0;
+	int flag = 0;
 	if (p_Enc->p_Vid->IPR[i - 1] <= p_Enc->p_Vid->IPR[i]) {
 		Median = p_Enc->p_Vid->IPR[i];
+		flag = i - 1;
 	}
-	else
+	else {
 		Median = p_Enc->p_Vid->IPR[i - 1];
+		flag = i;
+	}
+		
 
 	if (Median <= p_Enc->p_Vid->IPR[i + 1]) {
 		Median = Median;
 	}
 	else {
-		if (p_Enc->p_Vid->IPR[i - 1] < p_Enc->p_Vid->IPR[i + 1]) {
+		if (p_Enc->p_Vid->IPR[flag] < p_Enc->p_Vid->IPR[i + 1]) {
 			Median = p_Enc->p_Vid->IPR[i + 1];
 		}
 		else
-			Median = p_Enc->p_Vid->IPR[i - 1];
+			Median = p_Enc->p_Vid->IPR[flag];
 	}
 
     return Median;
@@ -528,22 +573,27 @@ int Median_IPR(int i) {
 
 
 int Median_SKP(int i) {
-	int Median = 0;
+	float Median = 0.0;
+	int flag = 0;
 	if (p_Enc->p_Vid->bit_final[i-1][2][0]<= p_Enc->p_Vid->bit_final[i][2][0]) {
 		Median = p_Enc->p_Vid->bit_final[i][2][0];
+		flag = i-1;
 	}
-	else
-		p_Enc->p_Vid->bit_final[i-1][2][0];
+	else {
+		Median = p_Enc->p_Vid->bit_final[i - 1][2][0];
+		flag = i;
+	}
+		
 
 	if (Median <= p_Enc->p_Vid->bit_final[i+1][2][0]) {
 		Median = Median;
 	}
 	else {
-		if (p_Enc->p_Vid->bit_final[i-1][2][0] < p_Enc->p_Vid->bit_final[i+1][2][0]) {
+		if (p_Enc->p_Vid->bit_final[flag][2][0] < p_Enc->p_Vid->bit_final[i+1][2][0]) {
 			Median = p_Enc->p_Vid->bit_final[i+1][2][0];
 		}
 		else
-			Median = p_Enc->p_Vid->bit_final[i-1][2][0];
+			Median = p_Enc->p_Vid->bit_final[flag][2][0];
 	}
 
 	return Median;
@@ -554,8 +604,8 @@ int Median_SKP(int i) {
 ///These 2 functions are used to find out Median for IPR2 and SKP2
 //////////////////////////////////////////////////////////////////////////
 int Mean_IPR(int i) {
-	int Mean = 0;
-	int sum = 0;
+	float Mean = 0.0;
+	float sum = 0.0;
 	int M = 5;
 	int i_start = i-M;
 	int i_end = i+M+1;	
@@ -565,7 +615,7 @@ int Mean_IPR(int i) {
 		i_start = 0;
 	}
 	if (p_Enc->p_Vid->number_frame<i + M) {
-		i_end = p_Enc->p_Vid->number_frame+1;
+		i_end = p_Enc->p_Vid->number_frame;
 	}
 
 	number = i_end - i_start;
@@ -579,8 +629,8 @@ int Mean_IPR(int i) {
 }
 
 int Mean_SKP(int i) {
-	int Mean = 0;
-	int sum = 0;
+	float Mean = 0.0;
+	float sum = 0.0;
 	int M = 5;
 	int i_start = i - M;
 	int i_end = i + M + 1;
@@ -590,7 +640,7 @@ int Mean_SKP(int i) {
 		i_start = 0;
 	}
 	if (p_Enc->p_Vid->number_frame<i + M) {
-		i_end = p_Enc->p_Vid->number_frame + 1;
+		i_end = p_Enc->p_Vid->number_frame;
 	}
 
 	number = i_end - i_start;
