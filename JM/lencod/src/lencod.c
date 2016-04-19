@@ -269,15 +269,18 @@ int main(int argc, char **argv)
   // encode sequence
   encode_sequence(p_Enc->p_Vid, p_Enc->p_Inp);
 
-
-  //Sysc 5404
+  ///////////////////////////////////////////////////////////////////////////////////////
+  //Sysc 5404 Multimedia Compression SCALABILITY &ADAPTATION,
+  //Created by Di @Carleton University  2016-04-02    (liudi1992@outlook.com)
+  ///////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////
   FILE *fp;
-  
   fp = fopen("SceneChangeDetectionResult.txt", "w");
   fprintf(fp, "");
   fclose(fp);
-
+  //This function is used to calculate IPR where ¦Åset as 1
   IPR_Cal();
+  //This function is used to print out previous result
   print_result();
 
   fp = fopen("SceneChangeDetectionResult.txt", "a");
@@ -285,6 +288,7 @@ int main(int argc, char **argv)
   fprintf(fp, "-----------Result of Abrupt Scene Change Detection--------------\n");
   fclose(fp);
 
+  //This function is used to realize the function of Abrupt Scene Change Detection
   Abr_Det();
   fp = fopen("SceneChangeDetectionResult.txt", "a");
   printf("---------------------------------------------------------------\n\n");
@@ -292,7 +296,8 @@ int main(int argc, char **argv)
   printf("-----------Result of Gradual Scene Change Detection-------------\n");
   fprintf(fp, "-----------Result of Gradual Scene Change Detection-------------\n");
   fclose(fp);
-
+  
+  //This function is used to realize the function of Gradual Scene Change Detection
   Gra_Det();
 
   fp = fopen("SceneChangeDetectionResult.txt", "a");
@@ -300,19 +305,13 @@ int main(int argc, char **argv)
   fprintf(fp, "---------------------------------------------------------------\n\n");
   fclose(fp);
   
-
+  //This function is used to check whether there is no Scene Change in the movie
   NoChangeDetection();
-  // terminate sequence
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
   free_encoder_memory(p_Enc->p_Vid, p_Enc->p_Inp);
-
-
-  
   free_params (p_Enc->p_Inp);  
   free_encoder(p_Enc);
-  //Sysc 5404    print finla result
-  
- 
-
   while (1);
   return 0;
 }
@@ -349,8 +348,10 @@ int IPR_Cal() {
 	}	
 	return 0;
 }
-
-
+//Sysc 5404
+///////////////////////////////////////////////////////////////////////////////
+//This function is used to check whether there is no Scene Change in the movie
+///////////////////////////////////////////////////////////////////////////////
 int NoChangeDetection() {
 	int flag_NoAbrDet = 0;
 	int flag_NoGraDet = 0;
@@ -372,7 +373,7 @@ int NoChangeDetection() {
 	return 0;
 }
 ///////////////////////////////////////////////////////////////////////////
-// This function is used to print the final result of processing
+// This function is used to print the result of IPR
 ///////////////////////////////////////////////////////////////////////////
 int print_result() {
 	FILE *fp;
@@ -412,7 +413,7 @@ int print_result() {
 	return 0;
 }
 //////////////////////////////////////////////////////////
-///This function is used to identify Abrupt Change
+///This function is used to identify Abrupt Scene Change
 //////////////////////////////////////////////////////////
 int Abr_Det() {
 	Boolean fun1 = 0;
@@ -442,11 +443,7 @@ int Abr_Det() {
 		if (p_Enc->p_Vid->number_frame - i < M) {
 			i_end = p_Enc->p_Vid->number_frame;
 		}
-		
-	
-
-
-		////////unequal 1
+		////////Inequation 1
 		////////////////////////////////
 		for (int j = i_start; j < i_end; j++) {
 			plus_value += p_Enc->p_Vid->IPR[j];
@@ -458,7 +455,7 @@ int Abr_Det() {
 			fun1 = 1;
 		}
 
-		////////unequal 2
+		////////Inequation 2
 		////////////////////////////////		
 		for (int j = i_start; j < i_end-1; j++) {
 			if (p_Enc->p_Vid->bit_final[j][2][0] <= p_Enc->p_Vid->bit_final[j + 1][2][0]) 
@@ -473,8 +470,8 @@ int Abr_Det() {
 			fun2 = 1;
 
 		}
-		////////Final
-		////////////////////
+		////////Final sentence
+		//////////////////////////////
 		FILE *fp;
 		fp = fopen("SceneChangeDetectionResult.txt", "a");
 		if (fun1&fun2) {
@@ -528,7 +525,7 @@ int Gra_Det() {
 		int h_end = z - 10;
 		fun1 = 0;
 		fun2 = 0;
-		////////unequal 1
+		////////Inequation 1
 		////////////////////////////////
 		
 		if (h_start < 0) {
@@ -554,7 +551,7 @@ int Gra_Det() {
 			fun1 = 1;
 		}
 
-		////////unequal 2
+		////////Inequation 2
 		////////////////////////////////
 		Min_SKP = p_Enc->p_Vid->SKP2[h_start];
 		for (int h = h_start; h <h_end; h++) {
@@ -569,7 +566,7 @@ int Gra_Det() {
 			fun2 = 1;
 		}
 
-		////////final
+		////////Final sentence
 		////////////////////////////////
 		FILE *fp;
 		fp = fopen("SceneChangeDetectionResult.txt", "a");
@@ -595,6 +592,9 @@ int Gra_Det() {
 
 //////////////////////////////////////////////////////////////////////////
 ///These 2 functions are used to find out Median for IPR and SKP
+//////////////////////////////////////////////////////////////////////////
+
+///This function is used to find out Median for IPR
 //////////////////////////////////////////////////////////////////////////
 int Median_IPR(int i) {
 	float Median = 0.0;
@@ -623,7 +623,8 @@ int Median_IPR(int i) {
     return Median;
 }
 
-
+///This function is used to find out Median for SKP
+//////////////////////////////////////////////////////////////////////////
 int Median_SKP(int i) {
 	float Median = 0.0;
 	int flag = 0;
@@ -655,6 +656,9 @@ int Median_SKP(int i) {
 //////////////////////////////////////////////////////////////////////////
 ///These 2 functions are used to find out Median for IPR2 and SKP2
 //////////////////////////////////////////////////////////////////////////
+
+///This function is used to find out Mean for IPR
+//////////////////////////////////////////////////////////////////////////
 int Mean_IPR(int i) {
 	float Mean = 0.0;
 	float sum = 0.0;
@@ -680,6 +684,8 @@ int Mean_IPR(int i) {
 	return Mean;
 }
 
+///This function is used to find out Mean for SKP
+//////////////////////////////////////////////////////////////////////////
 int Mean_SKP(int i) {
 	float Mean = 0.0;
 	float sum = 0.0;
