@@ -453,7 +453,7 @@ int Abr_Det() {
 
 		}
 		plus_value = plus_value - p_Enc->p_Vid->IPR[i];
-		if (p_Enc->p_Vid->IPR[i] >= plus_value)
+		if (p_Enc->p_Vid->IPR[i] > plus_value)
 		{
 			fun1 = 1;
 		}
@@ -549,7 +549,7 @@ int Gra_Det() {
 			else
 				Max_IPR = Max_IPR;
 		}
-		if (sum3_IPR>= Max_IPR)
+		if (sum3_IPR>=Max_IPR)
 		{
 			fun1 = 1;
 		}
