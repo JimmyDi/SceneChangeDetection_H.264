@@ -298,7 +298,7 @@ int main(int argc, char **argv)
   fclose(fp);
   
   //This function is used to realize the function of Gradual Scene Change Detection
-  Gra_Det();
+    Gra_Det();
 
   fp = fopen("SceneChangeDetectionResult.txt", "a");
   printf("---------------------------------------------------------------\n\n");
@@ -410,6 +410,17 @@ int print_result() {
 	printf("\n");
 	fprintf(fp, "\n");
 	fclose(fp);
+
+	fp = fopen("IPR.txt", "w");
+	fprintf(fp, "");
+	fclose(fp);
+
+	fp = fopen("IPR.txt", "a");
+	for (int h = 0; h < p_Enc->p_Vid->number_frame; h++) {
+		fprintf(fp, "%4d", h);
+		fprintf(fp,"%15.6f\n", p_Enc->p_Vid->IPR[h]);
+	}
+	fclose(fp);
 	return 0;
 }
 //////////////////////////////////////////////////////////
@@ -492,12 +503,13 @@ int Abr_Det() {
 
 
 //////////////////////////////////////////////////////////
-///This funciton is used to identify Gradual Change
+///This funciton is used to identify Gradual Scene Change
 //////////////////////////////////////////////////////////
 int Gra_Det() {
 	Boolean fun1 = 0;
 	Boolean fun2 = 0;
 	Boolean result = 0;
+	FILE *fp;
 	memset(p_Enc->p_Vid->IPR1, 0, sizeof(p_Enc->p_Vid->IPR1));
 	memset(p_Enc->p_Vid->SKP1, 0, sizeof(p_Enc->p_Vid->IPR1));
 	memset(p_Enc->p_Vid->IPR2, 0, sizeof(p_Enc->p_Vid->IPR1));
@@ -505,12 +517,29 @@ int Gra_Det() {
 	
 	 
 	for (int z = 0; z < p_Enc->p_Vid->number_frame; z++) {
-		p_Enc->p_Vid->IPR1[z] = Median_IPR(z);
-		p_Enc->p_Vid->SKP1[z] = Median_SKP(z);
-		p_Enc->p_Vid->IPR2[z] = Mean_IPR(z);
-		p_Enc->p_Vid->SKP2[z] = Mean_SKP(z);
+		Median_IPR(z);
+		Median_SKP(z);
+		Mean_IPR(z);
+		Mean_SKP(z);
 	}
 	
+	fp = fopen("IPR1.txt", "w");
+	fprintf(fp, "");
+	fclose(fp);
+	fp = fopen("IPR1.txt", "a");
+	for (int k = 0; k< p_Enc->p_Vid->number_frame; k++) {
+		fprintf(fp,"%2d   %5.6f\n",k,p_Enc->p_Vid->IPR1[k]);	
+	}
+	fclose(fp);
+
+	fp = fopen("IPR2.txt", "w");
+	fprintf(fp, "");
+	fclose(fp);
+	fp = fopen("IPR2.txt", "a");
+	for (int p = 0; p< p_Enc->p_Vid->number_frame; p++) {
+		fprintf(fp,"%2d   %5.6f\n",p, p_Enc->p_Vid->IPR2[p]);
+	}
+	fclose(fp);
 
 	float sum3_IPR = 0.0;
 	float Max_IPR = 0.0;
@@ -620,7 +649,9 @@ int Median_IPR(int i) {
 			Median = p_Enc->p_Vid->IPR[flag];
 	}
 
-    return Median;
+	p_Enc->p_Vid->IPR1[i] = Median;
+
+    return 1;
 }
 
 ///This function is used to find out Median for SKP
@@ -649,7 +680,8 @@ int Median_SKP(int i) {
 			Median = p_Enc->p_Vid->bit_final[flag][2][0];
 	}
 
-	return Median;
+	p_Enc->p_Vid->SKP1[i] = Median;
+	return 0;
 }
 
 
@@ -663,12 +695,12 @@ int Mean_IPR(int i) {
 	float Mean = 0.0;
 	float sum = 0.0;
 	int M = 5;
-	int i_start = i-M;
-	int i_end = i+M+1;	
-	int number = 0;
+	float i_start = i-M;
+	float i_end = i+M+1;	
+	float number = 0.0;
 	
 	if (i < M) {
-		i_start = 0;
+		i_start = 0.0;
 	}
 	if (p_Enc->p_Vid->number_frame<i + M) {
 		i_end = p_Enc->p_Vid->number_frame;
@@ -677,11 +709,12 @@ int Mean_IPR(int i) {
 	number = i_end - i_start;
 	
 	for (int j = i_start; j < i_end; j++) {
-		sum += p_Enc->p_Vid->IPR[j];
+		sum += p_Enc->p_Vid->IPR1[j];
 	}
 
 	Mean = sum / number;
-	return Mean;
+	p_Enc->p_Vid->IPR2[i] = Mean;
+	return 0;
 }
 
 ///This function is used to find out Mean for SKP
@@ -690,12 +723,12 @@ int Mean_SKP(int i) {
 	float Mean = 0.0;
 	float sum = 0.0;
 	int M = 5;
-	int i_start = i - M;
-	int i_end = i + M + 1;
-	int number = 0;
+	float i_start = i - M;
+	float i_end = i + M + 1;
+	float number = 0.0;
 
 	if (i < M) {
-		i_start = 0;
+		i_start = 0.0;
 	}
 	if (p_Enc->p_Vid->number_frame<i + M) {
 		i_end = p_Enc->p_Vid->number_frame;
@@ -704,11 +737,12 @@ int Mean_SKP(int i) {
 	number = i_end - i_start;
 
 	for (int j = i_start; j < i_end; j++) {
-		sum += p_Enc->p_Vid->bit_final[j][2][0];
+		sum += p_Enc->p_Vid->SKP1[j];
 	}
 
 	Mean = sum / number;
-	return Mean;
+	p_Enc->p_Vid->SKP2[i] = Mean;
+	return 0;
 }
 
 
