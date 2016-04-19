@@ -271,14 +271,36 @@ int main(int argc, char **argv)
 
 
   //Sysc 5404
+  FILE *fp;
+  
+  fp = fopen("SceneChangeDetectionResult.txt", "w");
+  fprintf(fp, "");
+  fclose(fp);
+
   IPR_Cal();
   print_result();
+
+  fp = fopen("SceneChangeDetectionResult.txt", "a");
   printf("-----------Result of Abrupt Scene Change Detection--------------\n");
+  fprintf(fp, "-----------Result of Abrupt Scene Change Detection--------------\n");
+  fclose(fp);
+
   Abr_Det();
+  fp = fopen("SceneChangeDetectionResult.txt", "a");
   printf("---------------------------------------------------------------\n\n");
+  fprintf(fp, "---------------------------------------------------------------\n\n");
   printf("-----------Result of Gradual Scene Change Detection-------------\n");
+  fprintf(fp, "-----------Result of Gradual Scene Change Detection-------------\n");
+  fclose(fp);
+
   Gra_Det();
+
+  fp = fopen("SceneChangeDetectionResult.txt", "a");
   printf("---------------------------------------------------------------\n\n");
+  fprintf(fp, "---------------------------------------------------------------\n\n");
+  fclose(fp);
+  
+
   NoChangeDetection();
   // terminate sequence
   free_encoder_memory(p_Enc->p_Vid, p_Enc->p_Inp);
@@ -320,6 +342,7 @@ static unsigned CeilLog2( unsigned uiVal)
 //This function is used to calculate IPR
 ///////////////////////////////////////////
 int IPR_Cal() {
+	memset(p_Enc->p_Vid->IPR,0,sizeof(p_Enc->p_Vid->IPR));
 	int e = 1;
 	for (int h = 0; h < p_Enc->p_Vid->number_frame; h++) {
 		p_Enc->p_Vid->IPR[h] = (float)p_Enc->p_Vid->bit_final[h][0][0] / ((float)p_Enc->p_Vid->bit_final[h][1][0] + e);
@@ -352,22 +375,40 @@ int NoChangeDetection() {
 // This function is used to print the final result of processing
 ///////////////////////////////////////////////////////////////////////////
 int print_result() {
-	int e = 1; // parameter in the equation of IPR
+	FILE *fp;
+	fp = fopen("SceneChangeDetectionResult.txt", "a");
+	
+
+	int e = 1; 
 	printf("\n");
+	fprintf(fp, "\n");
 	printf("----------------------------Sysc 5404-----------------------------------------\n");
+	fprintf(fp, "----------------------------Sysc 5404-----------------------------------------\n");
 	printf("---------------------------------------------------------\n");
+	fprintf(fp, "---------------------------------------------------------\n");
 	printf(" Frame   Intra       Inter        Skip         IPR\n");
+	fprintf(fp, " Frame   Intra       Inter        Skip         IPR\n");
 	printf("---------------------------------------------------------\n");
+	fprintf(fp, "---------------------------------------------------------\n");
+	
 	for (int h = 0; h < p_Enc->p_Vid->number_frame; h++) {
 		printf("%4d", h);
+		fprintf(fp, "%4d", h);
 		printf("%10d  ", p_Enc->p_Vid->bit_final[h][0][0]);
+		fprintf(fp, "%10d  ", p_Enc->p_Vid->bit_final[h][0][0]);
 		printf("%10d  ", p_Enc->p_Vid->bit_final[h][1][0]);
+		fprintf(fp, "%10d  ", p_Enc->p_Vid->bit_final[h][1][0]);
 		printf("%10d  ", p_Enc->p_Vid->bit_final[h][2][0]);
+		fprintf(fp, "%10d  ", p_Enc->p_Vid->bit_final[h][2][0]);
 		//printf("%10d  ", (p_Enc->p_Vid->bit_final[h][0][0]+ p_Enc->p_Vid->bit_final[h][1][0]+ p_Enc->p_Vid->bit_final[h][2][0]));
 		printf("%15.6f\n", p_Enc->p_Vid->IPR[h]);
+		fprintf(fp, "%15.6f\n", p_Enc->p_Vid->IPR[h]);
 	}
 	printf("---------------------------------------------------------\n");
+	fprintf(fp,"---------------------------------------------------------\n");
 	printf("\n");
+	fprintf(fp, "\n");
+	fclose(fp);
 	return 0;
 }
 //////////////////////////////////////////////////////////
@@ -434,6 +475,8 @@ int Abr_Det() {
 		}
 		////////Final
 		////////////////////
+		FILE *fp;
+		fp = fopen("SceneChangeDetectionResult.txt", "a");
 		if (fun1&fun2) {
 			p_Enc->p_Vid->AbrDet_Flag[i]=1;
 		}
@@ -441,8 +484,11 @@ int Abr_Det() {
 		{
 			p_Enc->p_Vid->AbrDet_Flag[i] = 0;
 		}
-		if(p_Enc->p_Vid->AbrDet_Flag[i] ==1)
-		printf("%d frame has abrupt scene change\n", i);
+		if(p_Enc->p_Vid->AbrDet_Flag[i] ==1){
+			printf("%d frame has abrupt scene change\n", i);
+			fprintf(fp, "%d frame has abrupt scene change\n", i);
+		}
+		fclose(fp);
 	}
 	return 0;
 }
@@ -455,10 +501,11 @@ int Gra_Det() {
 	Boolean fun1 = 0;
 	Boolean fun2 = 0;
 	Boolean result = 0;
-	p_Enc->p_Vid->IPR1[300] = 0.0;
-	p_Enc->p_Vid->SKP1[300] = 0.0;
-	p_Enc->p_Vid->IPR2[300] = 0.0;
-	p_Enc->p_Vid->SKP2[300] = 0.0;
+	memset(p_Enc->p_Vid->IPR1, 0, sizeof(p_Enc->p_Vid->IPR1));
+	memset(p_Enc->p_Vid->SKP1, 0, sizeof(p_Enc->p_Vid->IPR1));
+	memset(p_Enc->p_Vid->IPR2, 0, sizeof(p_Enc->p_Vid->IPR1));
+	memset(p_Enc->p_Vid->SKP2, 0, sizeof(p_Enc->p_Vid->IPR1));
+	
 	 
 	for (int z = 0; z < p_Enc->p_Vid->number_frame; z++) {
 		p_Enc->p_Vid->IPR1[z] = Median_IPR(z);
@@ -524,6 +571,8 @@ int Gra_Det() {
 
 		////////final
 		////////////////////////////////
+		FILE *fp;
+		fp = fopen("SceneChangeDetectionResult.txt", "a");
 		if (fun1&fun2 == 1) {
 			p_Enc->p_Vid->GraDet_Flag[z] = 1;
 		}
@@ -532,7 +581,10 @@ int Gra_Det() {
 
 		if (p_Enc->p_Vid->GraDet_Flag[z]) {
 			printf("%d frame has gradual scene change\n",z);
+			fprintf(fp, "%d frame has gradual scene change\n",z);
 		}
+		fclose(fp);
+
 	}
 	
 
@@ -1381,7 +1433,9 @@ static void encode_sequence(VideoParameters *p_Vid, InputParameters *p_Inp)
         //printf("last valid ref: %d", p_Vid->last_valid_reference);
       }
     }
-
+	//p_Vid->bit_final[curr_frame_to_code][0][0] += p_Vid->bit_frame[0][0];
+	//p_Vid->bit_final[curr_frame_to_code][1][0] += p_Vid->bit_frame[1][0];
+	//p_Vid->bit_final[curr_frame_to_code][2][0] += p_Vid->bit_frame[2][0];
 	p_Vid->bit_final[p_Vid->frm_no_in_file][0][0] += p_Vid->bit_frame[0][0];
 	p_Vid->bit_final[p_Vid->frm_no_in_file][1][0] += p_Vid->bit_frame[1][0];
 	p_Vid->bit_final[p_Vid->frm_no_in_file][2][0] += p_Vid->bit_frame[2][0];

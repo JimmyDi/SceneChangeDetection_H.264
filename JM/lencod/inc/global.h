@@ -1534,15 +1534,15 @@ typedef struct video_par
   int bit_plane[3][1];
   int bit_frame[3][1];
   int bit_picture[3][1];
-  int bit_final[300][3][1];
+  int bit_final[500][3][1];
   int number_frame;
-  int AbrDet_Flag[300];
-  int GraDet_Flag[300];
-  float IPR[300];
-  float IPR1[300];
-  float SKP1[300];
-  float IPR2[300];
-  float SKP2[300];
+  int AbrDet_Flag[500];
+  int GraDet_Flag[500];
+  float IPR[500];
+  float IPR1[500];
+  float SKP1[500];
+  float IPR2[500];
+  float SKP2[500];
 
   unsigned int PicWidthInMbs;
   unsigned int PicHeightInMapUnits;
